@@ -1,3 +1,110 @@
+
+// Test to Speech
+var volume_btn;
+
+let speech = new SpeechSynthesisUtterance();
+
+speech.lang = "en-US";
+
+speech.volume = 1;
+
+speech.rate = 1;
+speech.pitch = 1;
+
+try {
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var recognition = new SpeechRecognition();
+}
+catch(e) {
+  console.error(e);
+  $('.no-browser-support').show();
+  $('.app').hide();
+}
+
+var Textbox = $('#chats');
+
+var Content = '';
+
+recognition.continuous = true;
+
+recognition.onresult = function(event) {
+
+  var current = event.resultIndex;
+
+  var transcript = event.results[current][0].transcript;
+    Content="";
+    Content += transcript;
+    console.log("Content value is ",Content)
+
+var UserResponse = '<img class="userAvatar" src=' + "./static/img/userAvatar.jpg" + '><p class="userMsg">' + Content + ' </p><div class="clearfix"></div>';
+    $(UserResponse).appendTo(".chats").show("slow");
+    scrollToBottomOfResults();
+    send(Content);
+//    Textbox.val(Content);
+
+};
+
+//
+//$('#volume').click(function(e) {
+//var volume_btn=true;
+//});
+
+
+
+var un_mute = document.getElementById('un-mute');
+
+un_mute.onclick = function() {
+//var btn=$("input[type='checkbox']").val();
+//alert($('#un-mute').html());
+//console.log(btn);
+//speech.volume = 0;
+var selectedLanguage = new Array();
+$('input[name="un-mute"]:checked').each(function() {
+selectedLanguage.push(this.value);
+});
+
+if(selectedLanguage.length==1)
+{
+speech.volume = 0;
+}
+else
+{
+speech.volume = 1;
+}
+}
+
+
+
+$('#mike-btn').mousedown(function(e) {
+
+  $("#mike-btn").css("background-color","yellow");
+  if (Content.length) {
+    Content += ' ';
+//    console.log("content is" , Content);
+  }
+  recognition.start();
+});
+
+
+$('#mike-btn').mouseup(function(e) {
+  $("#mike-btn").css("background-color","White");
+  if (Content.length) {
+    Content += ' ';
+//    console.log("content is" , Content);
+  }
+  recognition.stop();
+});
+
+
+//
+//Textbox.on('input', function() {
+//  Content = $(this).val();
+//  console.log("Content value is ",Content)
+//})
+
+var btn_clicked;
+var audio = new Audio("notify.mp3");
+$('#not').hide();
 //Bot pop-up intro
 document.addEventListener('DOMContentLoaded', function() {
     var elemsTap = document.querySelector('.tap-target');
@@ -11,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
 //initialization
 $(document).ready(function() {
 
+    $('#userInput').focus();
 
     //Bot pop-up intro
     $("div").removeClass("tap-target-origin")
@@ -23,16 +131,16 @@ $(document).ready(function() {
 
 
 
-    //enable this if u have configured the bot to start the conversation. 
-    // showBotTyping();
-    // $("#userInput").prop('disabled', true);
+    //enable this if u have configured the bot to start the conversation.
+//     showBotTyping();
+//     $("#userInput").prop('disabled', true);
 
     //global variables
     action_name = "action_greet_user";
-    user_id = "jitesh97";
+    user_id = "VirtiBot";
 
     //if you want the bot to start the conversation
-    // action_trigger();
+    //action_trigger();
 
 })
 
@@ -80,6 +188,7 @@ function action_trigger() {
 
 //=====================================	user enter or sends the message =====================
 $(".usrInput").on("keyup keypress", function(e) {
+ $('#userInput').focus();
     var keyCode = e.keyCode || e.which;
 
     var text = $(".usrInput").val();
@@ -105,12 +214,14 @@ $(".usrInput").on("keyup keypress", function(e) {
             setUserResponse(text);
             send(text);
             e.preventDefault();
+            $('#userInput').focus();
             return false;
         }
     }
 });
 
 $("#sendButton").on("click", function(e) {
+    $('#userInput').focus();
     var text = $(".usrInput").val();
     if (text == "" || $.trim(text) == "") {
         e.preventDefault();
@@ -118,7 +229,7 @@ $("#sendButton").on("click", function(e) {
     } else {
         //destroy the existing chart
 
-        chatChart.destroy();
+//        chatChart.destroy();
         $(".chart-container").remove();
         if (typeof modalChart !== 'undefined') { modalChart.destroy(); }
 
@@ -129,13 +240,14 @@ $("#sendButton").on("click", function(e) {
         setUserResponse(text);
         send(text);
         e.preventDefault();
+        $('#userInput').focus();
         return false;
     }
 })
 
 //==================================== Set user response =====================================
 function setUserResponse(message) {
-    var UserResponse = '<img class="userAvatar" src=' + "userAvatar.jpg" + '><p class="userMsg">' + message + ' </p><div class="clearfix"></div>';
+    var UserResponse = '<img class="userAvatar" src=' + "./static/img/userAvatar.jpg" + '><p class="userMsg">' + message + ' </p><div class="clearfix"></div>';
     $(UserResponse).appendTo(".chats").show("slow");
 
     $(".usrInput").val("");
@@ -189,7 +301,7 @@ function send(message) {
         }
     });
 }
-
+var count=0
 //=================== set bot response in the chats ===========================================
 function setBotResponse(response) {
 
@@ -200,19 +312,26 @@ function setBotResponse(response) {
             //if there is no response from Rasa, send  fallback message to the user
             var fallbackMsg = "I am facing some issues, please try again later!!!";
 
-            var BotResponse = '<img class="botAvatar" src="sara_avatar.png"/><p class="botMsg">' + fallbackMsg + '</p><div class="clearfix"></div>';
+            var BotResponse = '<img class="botAvatar" src="./static/img/bot_icon.png"/><p class="botMsg">' + fallbackMsg + '</p><div class="clearfix"></div>';
 
             $(BotResponse).appendTo(".chats").hide().fadeIn(1000);
+
+            speech.text=fallbackMsg
+            window.speechSynthesis.speak(speech);
             scrollToBottomOfResults();
         } else {
+
+
 
             //if we get response from Rasa
             for (i = 0; i < response.length; i++) {
 
                 //check if the response contains "text"
                 if (response[i].hasOwnProperty("text")) {
-                    var BotResponse = '<img class="botAvatar" src="sara_avatar.png"/><p class="botMsg">' + response[i].text + '</p><div class="clearfix"></div>';
+                    var BotResponse = '<img class="botAvatar" src="./static/img/bot_icon.png"/><p class="botMsg">' + response[i].text + '</p><div class="clearfix"></div>';
                     $(BotResponse).appendTo(".chats").hide().fadeIn(1000);
+                    speech.text=response[i].text
+                    window.speechSynthesis.speak(speech);
                 }
 
                 //check if the response contains "images"
@@ -222,12 +341,13 @@ function setBotResponse(response) {
                 }
 
 
-                //check if the response contains "buttons" 
+                //check if the response contains "buttons"
                 if (response[i].hasOwnProperty("buttons")) {
+                    console.log("response is",response[i].buttons);
                     addSuggestion(response[i].buttons);
                 }
 
-                //check if the response contains "attachment" 
+                //check if the response contains "attachment"
                 if (response[i].hasOwnProperty("attachment")) {
 
                     //check if the attachment type is "video"
@@ -239,7 +359,7 @@ function setBotResponse(response) {
                     }
 
                 }
-                //check if the response contains "custom" message  
+                //check if the response contains "custom" message
                 if (response[i].hasOwnProperty("custom")) {
 
                     //check if the custom payload type is "quickReplies"
@@ -270,6 +390,21 @@ function setBotResponse(response) {
                         scrollToBottomOfResults();
                         return;
                     }
+                    //check if the custom payload type is "dateTime"
+                    if (response[i].custom.payload == "dateTime") {
+                        console.log("payload received")
+                        getdate();
+                        scrollToBottomOfResults();
+                        return;
+                    }
+
+
+                    if (response[i].custom.payload == "HiGif") {
+                        console.log("payload received")
+                        getGif();
+                        scrollToBottomOfResults();
+                        return;
+                    }
 
                     //check if the custom payload type is "cardsCarousel"
                     if (response[i].custom.payload == "cardsCarousel") {
@@ -284,7 +419,7 @@ function setBotResponse(response) {
                         // sample format of the charts data:
                         // var chartData = { "title": "Leaves", "labels": ["Sick Leave", "Casual Leave", "Earned Leave", "Flexi Leave"], "backgroundColor": ["#36a2eb", "#ffcd56", "#ff6384", "#009688", "#c45850"], "chartsData": [5, 10, 22, 3], "chartType": "pie", "displayLegend": "true" }
 
-                        //store the below parameters as global variable, 
+                        //store the below parameters as global variable,
                         // so that it can be used while displaying the charts in modal.
                         chartData = (response[i].custom.data)
                         title = chartData.title;
@@ -306,6 +441,33 @@ function setBotResponse(response) {
                         createCollapsible(data);
                     }
                 }
+                count=count+1
+                console.log("count ", count)
+//                if(btn_clicked == true)
+//                {
+//                console.log("under if condition ");
+//                console.log("Count after button clicked ",count);
+//                if (count ==0){
+//
+//                $('#not').hide();
+//                }
+//                $('#not').html(count);
+//                audio.play();
+//                }
+          if(btn_clicked==true)
+     {    count=0
+          $('#not').hide();
+          console.log("Show");
+     }
+          if(btn_clicked==false)
+     {
+          $('#not').show();
+          $('#not').html(count);
+          audio.play();
+          console.log("hide");
+     }
+
+
             }
             scrollToBottomOfResults();
         }
@@ -314,8 +476,16 @@ function setBotResponse(response) {
 
 //====================================== Toggle chatbot =======================================
 $("#profile_div").click(function() {
+    count=0;
+    btn_clicked=true;
+//    count=0;
+
     $(".profile_div").toggle();
-    $(".widget").toggle();
+    $(".widget").show();
+    scrollToBottomOfResults();
+    count=0;
+    console.log("show in function")
+    $('#userInput').focus();
 });
 
 
@@ -370,13 +540,16 @@ function renderDropDwon(data) {
 function addSuggestion(textToAdd) {
     setTimeout(function() {
         var suggestions = textToAdd;
+        console.log("suggestions", textToAdd);
         var suggLength = textToAdd.length;
+        console.log("suggestion Length ",suggLength);
         $(' <div class="singleCard"> <div class="suggestions"><div class="menu"></div></div></diV>').appendTo(".chats").hide().fadeIn(1000);
         // Loop through suggestions
         for (i = 0; i < suggLength; i++) {
             $('<div class="menuChips" data-payload=\'' + (suggestions[i].payload) + '\'>' + suggestions[i].title + "</div>").appendTo(".menu");
         }
         scrollToBottomOfResults();
+        $("#userInput" ).hide();
     }, 1000);
 }
 
@@ -390,14 +563,17 @@ $(document).on("click", ".menu .menuChips", function() {
 
     //delete the suggestions once user click on it
     $(".suggestions").remove();
+    $("#userInput" ).show();
 
 });
 
 //====================================== functions for drop-down menu of the bot  =========================================
 
 //restart function to restart the conversation.
-$("#restart").click(function() {
+$("#btn-restart").click(function() {
+    $("#btn-restart").toggleClass( "highlight" );
     restartConversation()
+    recognition.stop()
 });
 
 //clear function to clear the chat contents of the widget.
@@ -408,12 +584,36 @@ $("#clear").click(function() {
     });
 });
 
-//close function to close the widget.
-$("#close").click(function() {
-    $(".profile_div").toggle();
-    $(".widget").toggle();
-    scrollToBottomOfResults();
+$("#clear").click(function() {
+    $(".chats").fadeOut("normal", function() {
+        $(".chats").html("");
+        $(".chats").fadeIn();
+    });
 });
+
+
+
+//close function to close the widget.
+
+$("#btn-close").click(function() {
+    btn_clicked=false;
+//    count=0;
+    $(".profile_div").toggle();
+    $(".widget").hide();
+    $('#not').html(count);
+    console.log("hide in function")
+    scrollToBottomOfResults();
+
+});
+
+
+//
+//$("#chat_head").click(function() {
+//    $(".profile_div").toggle();
+//    $(".widget").toggle();
+//    scrollToBottomOfResults();
+//});
+
 
 //====================================== Cards Carousel =========================================
 
@@ -537,11 +737,47 @@ function getLocation() {
     }
 }
 
+function getdate() {
+
+$('<div id="calender"><div class="container"><div class="panel panel-primary"><div class="panel-heading">Schedule an Appointment</div><div class="col-md-6"><div class="form-group"><div class="input-group date" id="datetimepicker1"><input type="text" class="form-control" /><span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span></div><input type="submit" id="sub" class="btn btn-primary" value="Submit"></di  v></div></div></div></div></div></div>').appendTo(".chats").hide().fadeIn(1000);
+ scrollToBottomOfResults();
+ console.log("Date time construction");
+
+ $('#datetimepicker1').datetimepicker();
+
+  $("#sub").click(function(){
+    var dat= $("input:text").val();
+    setUserResponse(dat);
+    scrollToBottomOfResults();
+
+    send(dat);
+//    showBotTyping();
+
+   $("#calender").remove();
+
+  });
+//  $( "#userInput" ).autocomplete({
+//  autoFocus: true
+//});
+}
+
+function getGif(){
+
+showBotTyping();
+
+var gif=$('<div class="tenor-gif-embed" data-postid="13974826" data-share-method="host" data-width="100%" data-aspect-ratio="1.3863636363636365"><a href="https://tenor.com/view/puppy-dog-wave-hello-hi-gif-13974826">Puppy Dog GIF</a> from <a href="https://tenor.com/search/puppy-gifs">Puppy GIFs</a></div><script type="text/javascript" async src="https://tenor.com/embed.js"></script>').appendTo(".chats").hide().fadeIn(1000);
+           response="gif from rasa";
+           send(response);
+           scrollToBottomOfResults();
+}
+
+
+
 function getUserPosition(position) {
     response = "Latitude: " + position.coords.latitude + " Longitude: " + position.coords.longitude;
     console.log("location: ", response);
 
-    //here you add the intent which you want to trigger 
+    //here you add the intent which you want to trigger
     response = '/inform{"latitude":' + position.coords.latitude + ',"longitude":' + position.coords.longitude + '}';
     $("#userInput").prop('disabled', false);
     send(response);
@@ -577,7 +813,7 @@ function handleLocationAccessError(error) {
 //======================================bot typing animation ======================================
 function showBotTyping() {
 
-    var botTyping = '<img class="botAvatar" id="botAvatar" src="sara_avatar.png"/><div class="botTyping">' + '<div class="bounce1"></div>' + '<div class="bounce2"></div>' + '<div class="bounce3"></div>' + '</div>'
+    var botTyping = '<img class="botAvatar" id="botAvatar" src="./static/img/bot_icon.png"/><div class="botTyping">' + '<div class="bounce1"></div>' + '<div class="bounce2"></div>' + '<div class="bounce3"></div>' + '</div>'
     $(botTyping).appendTo(".chats");
     $('.botTyping').show();
     scrollToBottomOfResults();
