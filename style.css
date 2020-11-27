@@ -1,9 +1,7 @@
-body {
-    font-family: 'Raleway', sans-serif;
-    background: url('../img/body.png') no-repeat center center fixed;
-    background-size: cover;
+* {
+    box-sizing: border-box !important;
+    outline: none !important;
 }
-
 
 /* ============= css related to chats =============== */
 
@@ -42,13 +40,18 @@ body {
     overflow-y: scroll;
     margin-top: 1px;
     transition: 0.2s;
+    overflow:scroll;
+    overflow-x: hidden;
 }
 
 div.chats::-webkit-scrollbar {
-    overflow-y: hidden;
-    width: 0px;
+    overflow-y: auto;
+    width: 10px;
+   background-color: darkgrey;
+  outline: 1px solid slategrey;
+
     /* remove scrollbar space /
-    background: transparent;
+     background: transparent;
     / optional: just make scrollbar invisible */
 }
 
@@ -166,6 +169,20 @@ textarea-webkit-scrollbar {
     border-radius: 50px;
     width: 60%;
 }
+
+.bpw-header-icon {
+    color: black;
+    float:right;
+    display:inline-block;
+    padding:2px 5px;
+    cursor: pointer;
+
+    fill:red;
+    height:25px;
+    width=20px;
+    position=absolute;
+    top=20px;
+    }
 
 .profile_div {
     /* display: none; */
@@ -837,4 +854,66 @@ video:focus {
 
 .pdf_link a {
     color: #5a17ee;
+}
+
+#icon
+{
+    height:10px;
+    width:10px;
+    background-color:#bbb;
+    position:relative;
+
+}
+#not
+{
+    position:absolute;
+    top:-10px;
+    right:-10px;
+    background-color:#f00;
+    width:20px;
+    height:20px;
+    color:#fff;
+    border-radius:20px
+    -moz-border-radius:20px;
+    -webkit-border-radius:20px;
+    text-align:center;
+    border:2px solid #fff;
+
+}
+
+.tenor-gif-embed  {
+    float: bottom;
+    margin-bottom: 20px;
+}
+
+.mike {
+ position:absolute;
+ right:57px;
+ top:8px;
+}
+.volume {
+
+    right: 65px;
+    position: absolute;
+    float: right;
+
+}
+input#un-mute {
+  display: none;
+}
+
+.unmute img {
+  display: none;
+}
+
+input#un-mute:checked ~ .unmute img {
+  display: initial;
+}
+
+input#un-mute:checked ~ .mute img {
+  display: none;
+}
+
+.mute-btn{
+height:10px;
 }
